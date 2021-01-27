@@ -1,9 +1,10 @@
 DoctrineSetTypeBundle
 =====================
 
-The `DoctrineSetTypeBundle` provides support MySQL SET type for Doctrine2 in your Symfony2 application.
+The `DoctrineSetTypeBundle` provides support MySQL SET type for Doctrine2 in your Symfony2 or Symfony3 application.
 
 [![Latest Stable Version](https://poser.pugx.org/okapon/doctrine-set-type-bundle/v/stable.svg)](https://packagist.org/packages/okapon/doctrine-set-type-bundle)
+[![Total Downloads](https://poser.pugx.org/okapon/doctrine-set-type-bundle/downloads)](https://packagist.org/packages/okapon/doctrine-set-type-bundle)
 [![Build Status](https://travis-ci.org/okapon/DoctrineSetTypeBundle.svg?branch=master)](https://travis-ci.org/okapon/DoctrineSetTypeBundle)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/okapon/DoctrineSetTypeBundle/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/okapon/DoctrineSetTypeBundle/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/okapon/DoctrineSetTypeBundle/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/okapon/DoctrineSetTypeBundle/?branch=master)
@@ -12,15 +13,15 @@ The `DoctrineSetTypeBundle` provides support MySQL SET type for Doctrine2 in you
 
 ## Features
 
-* SET type mapping
+* SET type mapping for mysql
 * SET type validation
 * Doctrine migrations
 
 ## Requirements
 
-* PHP 5.5+
-* Symfony 2.5+
-* Doctrine 2.2+
+* PHP ~5.5
+* Symfony ~2.6 or ~3.0
+* Doctrine ~2.3
 
 ## Supported platforms
 
@@ -33,7 +34,7 @@ The `DoctrineSetTypeBundle` provides support MySQL SET type for Doctrine2 in you
 Using composer
 
 ```
-$ composer require okapon/doctrine-set-type-bundle "0.2.0"
+$ composer require okapon/doctrine-set-type-bundle "0.5.0"
 ```
 
 ## Step 2: Enable the Bundle
@@ -111,6 +112,30 @@ class UserGroupType extends AbstractSetType
         self::GROUP2 => 'Group 2',
         self::GROUP3 => 'Group 3',
     ];
+}
+```
+
+Or you may define set type definition in entity by overrideing `AbstractSetType::getChoices()` method. 
+
+```php
+class UserGroupType extends AbstractSetType
+{
+    public static function getChoices()
+    {
+        return User::getGroupChoices();
+    }
+}
+
+class User
+{
+    public static function getGroupChoices()
+    {
+        return [
+            self::GROUP1 => 'Group 1',
+            self::GROUP2 => 'Group 2',
+            self::GROUP3 => 'Group 3',
+        ];
+    }
 }
 ```
 
@@ -207,7 +232,7 @@ $user->setGroups([UserGroupType::GROUP1, UserGroupType::GROUP2]);
 
 And also You can validate your type by adding the following annotation.
 
-```
+```php
     /**
      * @DoctrineAssert\SetType(class="AppBundle\DBAL\Types\UserGroupType")
      */
@@ -216,16 +241,20 @@ And also You can validate your type by adding the following annotation.
 
 ### Building the form
 
-Input `null` to the Second argument.
+Pass `null` to the Second argument.
 
-[SetTypeGuesser](https://github.com/okapon/DoctrineSetTypeBundle/blob/master/Form/Guess/SetTypeGuesser.php) render the field as checkboxes.
+[SetTypeGuesser](https://github.com/okapon/DoctrineSetTypeBundle/blob/master/Form/Guess/SetTypeGuesser.php) extends ChoiseType and render the field as checkboxes.
+
+So, you can use choice field type option. (see [choice Field Type](http://symfony.com/doc/current/reference/forms/types/choice.html))
+
 
 ```php
 $builder->add('groups', null, [
-    'choices' => UserGroupType::getChoices()
     'required' => true,
+    'invalid_message' => 'Given values are invalid!!'
 ]);
 ```
+
 
 ### Doctrine migrations
 
